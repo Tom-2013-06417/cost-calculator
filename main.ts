@@ -36,6 +36,10 @@ function printTree(root: Node) {
   }
 }
 
+function printJson(root: Node) {
+  process.stdout.write(`${JSON.stringify(root)}`);
+}
+
 function computePossibilityCount(data: Data): number {
   let product = 1;
   for (const feature in data) {
@@ -120,8 +124,34 @@ function main() {
   });
 
   const root = buildTree(data);
-  printTree(root);
-  console.log(`Total combinations: ${computePossibilityCount(data)}`);
+  const matrix: any[][] = [];
+  let branchArray: number[] = [];
+
+  const preorder = (node: Node | undefined) => {
+    if (node === undefined) {
+      matrix.push(Array.from(branchArray));
+      return;
+    }
+
+    branchArray.push(node.number);
+
+    if (node.next.length > 0) {
+      node.next.forEach((child) => {
+        preorder(child);
+        branchArray.pop();
+      });
+    } else {
+      preorder(undefined);
+    }
+  };
+
+  const invertMatrix = (matrix: number[][]): number[][] =>
+    matrix[0].map((_, j) => matrix.map((row) => row[j]));
+
+  preorder(root.next[0]);
+  matrix.unshift(Object.keys(data));
+  const invertedMatrix = invertMatrix(matrix);
+  console.log(invertedMatrix.map((row) => row.join(",")).join("\n"));
 }
 
 main();
